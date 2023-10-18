@@ -1,6 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { QueryFailedError, Repository } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
@@ -10,41 +14,81 @@ export class UserService {
   constructor(
     @InjectRepository(User) private readonly userRepository: Repository<User>,
   ) {}
-  async create(createUserDto: CreateUserDto): Promise<User> {
-    const user = this.userRepository.create(createUserDto);
-    return await this.userRepository.save(user);
+  async create(createUserDto: CreateUserDto) {
+    try {
+      const user = this.userRepository.create(createUserDto);
+      await this.userRepository.save(user);
+      return {
+        message: 'User created successfully',
+        statusCode: 201,
+      };
+    } catch (error) {
+      if (error instanceof QueryFailedError) {
+        throw new BadRequestException(error.driverError.detail);
+      } else {
+        throw new InternalServerErrorException(error.message);
+      }
+    }
   }
 
   async findAll(): Promise<User[]> {
-    return await this.userRepository.find();
+    try {
+      return await this.userRepository.find();
+    } catch (error) {
+      throw new InternalServerErrorException(error.message);
+    }
   }
 
   async findOne(id: number): Promise<User | undefined> {
-    return await this.userRepository.findOneBy({ id: id });
+    try {
+      return await this.userRepository.findOneBy({ id: id });
+    } catch (error) {
+      throw new InternalServerErrorException(error.message);
+    }
   }
 
   async update(id: number, updateUserDto: UpdateUserDto) {
-    const user = await this.userRepository.findOneBy({ id: id });
-    if (updateUserDto.username) {
-      user.username = updateUserDto.username;
-    }
-    if (updateUserDto.email) {
-      user.email = updateUserDto.email;
-    }
-    if (updateUserDto.password) {
-      user.password = updateUserDto.password;
-    }
-    if (updateUserDto.age) {
-      user.age = updateUserDto.age;
-    }
-    if (updateUserDto.gender) {
-      user.gender = updateUserDto.gender;
-    }
+    try {
+      const user = await this.userRepository.findOneBy({ id: id });
+      if (updateUserDto.username) {
+        user.username = updateUserDto.username;
+      }
+      if (updateUserDto.email) {
+        user.email = updateUserDto.email;
+      }
+      if (updateUserDto.password) {
+        user.password = updateUserDto.password;
+      }
+      if (updateUserDto.age) {
+        user.age = updateUserDto.age;
+      }
+      if (updateUserDto.gender) {
+        user.gender = updateUserDto.gender;
+      }
 
-    return await this.userRepository.save(user);
+      await this.userRepository.save(user);
+      return {
+        message: 'User updated successfully',
+        statusCode: 204,
+      };
+    } catch (error) {
+      if (error instanceof QueryFailedError) {
+        throw new BadRequestException(error.driverError.detail);
+      } else {
+        throw new InternalServerErrorException(error.message);
+      }
+    }
   }
 
   async remove(id: number) {
-    return await this.userRepository.delete({ id: id });
+    try {
+      await this.userRepository.delete({ id: id });
+      return {
+        message: 'User deleted successfully',
+        statusCode: 204,
+      };
+    } catch (error) {
+      throw new InternalServerErrorException(error.message);
+    }
   }
 }
