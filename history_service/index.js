@@ -52,13 +52,14 @@ app.listen(PORT, (error) => {
 
 app.get("/history/page/:page", async (req, res) => {
   try {
-    const page = parseInt(req.params.page);
+    const query = req.query;
+    const page = parseInt(req.params.page) || 1;
     if (!Number.isInteger(page) || page <= 0) {
       return res.status(400).json({ message: "Invalid page parameter" });
     }
 
-    let limit = parseInt(req.query.limit);
-    if (!limit || limit <= 0 || !Number.isInteger(limit)) {
+    const limit = parseInt(query.limit) || 2;
+    if (limit <= 0 || !Number.isInteger(limit)) {
       return res.status(400).json({ message: "Invalid limit parameter" });
     }
 
@@ -68,9 +69,20 @@ app.get("/history/page/:page", async (req, res) => {
       return res.status(400).json({ message: "Page out of bounds" });
     }
 
+    const validSorts = ["asc", "desc"];
+    const sort = validSorts.includes(query.sort) ? query.sort : "desc";
+
+    const user = parseInt(query.user);
+
     const history_chunk = await prisma.history.findMany({
       skip: (page - 1) * limit,
       take: limit,
+      orderBy: {
+        created_at: sort,
+      },
+      where: {
+        user_id: user,
+      },
     });
     const result = {
       data: history_chunk,
