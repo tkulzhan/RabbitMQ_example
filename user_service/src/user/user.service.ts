@@ -8,16 +8,19 @@ import { QueryFailedError, Repository } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
+import { RabbitMQService } from 'src/rabbitmq/rabbitmq.service';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(User) private readonly userRepository: Repository<User>,
+    private readonly rabbitMQService: RabbitMQService,
   ) {}
   async create(createUserDto: CreateUserDto) {
     try {
       const user = this.userRepository.create(createUserDto);
       await this.userRepository.save(user);
+      this.rabbitMQService.sendMessage('actions', 'N');
       return {
         message: 'User created successfully',
         statusCode: 201,

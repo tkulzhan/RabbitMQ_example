@@ -1,12 +1,39 @@
 const express = require("express");
+const EventEmitter = require("events");
+const amqp = require("amqplib");
 const { PrismaClient } = require("@prisma/client");
 
+const prisma = new PrismaClient();
 const app = express();
 const PORT = 5001;
 
-app.get("/", (req, res) => {
-  res.send("Hello");
-});
+app.use(express.json());
+
+const emitter = new EventEmitter();
+var channel, connection;
+
+connectQueue();
+async function connectQueue() {
+  try {
+    connection = await amqp.connect(
+      "amqps://mombwlwf:ST-l0O31nJnPfzAyuYc1iVyvV0Ns510y@cow.rmq2.cloudamqp.com/mombwlwf"
+    );
+    channel = await connection.createChannel();
+    await channel.consume("actions", (data) => {
+      console.log(`Received ${Buffer.from(data.content)}`);
+      // const msg = JSON.parse(data.content.toString());
+      // emitter.emit(msg.event, msg);
+      channel.ack(data);
+    });
+    process.on("beforeExit", () => {
+      console.log("closing");
+      channel.close();
+      connection.close();
+    });
+  } catch (error) {
+    console.log(error);
+  }
+}
 
 app.listen(PORT, (error) => {
   if (error) {
@@ -15,8 +42,6 @@ app.listen(PORT, (error) => {
   }
   console.log(`History service listening on http://localhost:${PORT}`);
 });
-
-const prisma = new PrismaClient();
 
 async function main() {
   const allUsers = await prisma.user.findMany();
