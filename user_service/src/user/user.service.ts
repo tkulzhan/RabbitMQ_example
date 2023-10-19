@@ -23,8 +23,8 @@ export class UserService {
       this.rabbitMQService.sendMessage('actions', {
         data: {
           type: 'created',
-          created_at: Date.now(),
-          user_id: 28,
+          created_at: new Date(),
+          user_id: user.id,
         },
       });
       return {
@@ -84,7 +84,7 @@ export class UserService {
       await this.userRepository.save(user);
       this.rabbitMQService.sendMessage('actions', {
         data: {
-          type: 'created',
+          type: 'updated',
           created_at: new Date(),
           description: description.slice(0, -2),
           user_id: user.id,

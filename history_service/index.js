@@ -21,8 +21,8 @@ async function connectQueue() {
     channel = await connection.createChannel();
     await channel.consume("actions", (data) => {
       console.log(`Received ${Buffer.from(data.content)}`);
-      // const msg = JSON.parse(data.content.toString());
-      // emitter.emit(msg.event, msg);
+      const action = JSON.parse(data.content);
+      emitter.emit("action", action);
       channel.ack(data);
     });
     process.on("beforeExit", () => {
@@ -35,6 +35,14 @@ async function connectQueue() {
   }
 }
 
+emitter.on("action", async (action) => {
+  console.log("action => " + `${action}`);
+  const history = await prisma.history.create({
+    data: { ...action.data },
+  });
+  console.log(history);
+});
+
 app.listen(PORT, (error) => {
   if (error) {
     console.log("Error starting server");
@@ -42,24 +50,3 @@ app.listen(PORT, (error) => {
   }
   console.log(`History service listening on http://localhost:${PORT}`);
 });
-
-// async function main() {
-//   const history = await prisma.history.create({
-//     data: {
-//       type: "created",
-//       created_at: new Date(),
-//       user_id: 29,
-//     },
-//   });
-//   console.log(history);
-// }
-
-// main()
-//   .then(async () => {
-//     await prisma.$disconnect();
-//   })
-//   .catch(async (e) => {
-//     console.error(e);
-//     await prisma.$disconnect();
-//     process.exit(1);
-//   });
