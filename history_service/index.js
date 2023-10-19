@@ -43,17 +43,23 @@ app.listen(PORT, (error) => {
   console.log(`History service listening on http://localhost:${PORT}`);
 });
 
-async function main() {
-  const allUsers = await prisma.user.findMany();
-  console.log(allUsers);
-}
+// async function main() {
+//   const history = await prisma.history.create({
+//     data: {
+//       type: "created",
+//       created_at: new Date(),
+//       user_id: 29,
+//     },
+//   });
+//   console.log(history);
+// }
 
-main()
-  .then(async () => {
-    await prisma.$disconnect();
-  })
-  .catch(async (e) => {
-    console.error(e);
-    await prisma.$disconnect();
-    process.exit(1);
-  });
+// main()
+//   .then(async () => {
+//     await prisma.$disconnect();
+//   })
+//   .catch(async (e) => {
+//     console.error(e);
+//     await prisma.$disconnect();
+//     process.exit(1);
+//   });

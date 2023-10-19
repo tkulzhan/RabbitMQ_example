@@ -20,7 +20,13 @@ export class UserService {
     try {
       const user = this.userRepository.create(createUserDto);
       await this.userRepository.save(user);
-      this.rabbitMQService.sendMessage('actions', 'N');
+      this.rabbitMQService.sendMessage('actions', {
+        data: {
+          type: 'created',
+          created_at: Date.now(),
+          user_id: 28,
+        },
+      });
       return {
         message: 'User created successfully',
         statusCode: 201,
@@ -53,23 +59,38 @@ export class UserService {
   async update(id: number, updateUserDto: UpdateUserDto) {
     try {
       const user = await this.userRepository.findOneBy({ id: id });
+      let description = 'User updated: ';
       if (updateUserDto.username) {
+        description += `username (${user.username}), `;
         user.username = updateUserDto.username;
       }
       if (updateUserDto.email) {
+        description += `email (${user.email}), `;
         user.email = updateUserDto.email;
       }
       if (updateUserDto.password) {
+        description += `password, `;
         user.password = updateUserDto.password;
       }
       if (updateUserDto.age) {
+        description += `age (${user.age}), `;
         user.age = updateUserDto.age;
       }
       if (updateUserDto.gender) {
+        description += `gender (${user.gender}), `;
         user.gender = updateUserDto.gender;
       }
 
       await this.userRepository.save(user);
+      this.rabbitMQService.sendMessage('actions', {
+        data: {
+          type: 'created',
+          created_at: new Date(),
+          description: description.slice(0, -2),
+          user_id: user.id,
+        },
+      });
+
       return {
         message: 'User updated successfully',
         statusCode: 204,
