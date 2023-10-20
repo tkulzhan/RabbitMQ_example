@@ -22,7 +22,7 @@ model user {
   email    String           @unique(map: "UQ_e12875dfb3b1d92d7d7c5377e22") @db.VarChar(64)
   age      Int
   gender   user_gender_enum
-  password String           @db.VarChar(20)
+  password String
   history  history[]
 }
 

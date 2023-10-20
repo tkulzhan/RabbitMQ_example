@@ -9,6 +9,8 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
 import { RabbitMQService } from 'src/rabbitmq/rabbitmq.service';
+import * as bcrypt from 'bcrypt';
+import { randomInt } from 'crypto';
 
 @Injectable()
 export class UserService {
@@ -19,6 +21,8 @@ export class UserService {
   async create(createUserDto: CreateUserDto) {
     try {
       const user = this.userRepository.create(createUserDto);
+      const hash = await bcrypt.hash(user.password, randomInt(6, 18));
+      user.password = hash;
       await this.userRepository.save(user);
       this.rabbitMQService.sendMessage('actions', {
         data: {
@@ -70,7 +74,8 @@ export class UserService {
       }
       if (updateUserDto.password) {
         description += `password, `;
-        user.password = updateUserDto.password;
+        const hash = await bcrypt.hash(user.password, randomInt(6, 18));
+        user.password = hash;
       }
       if (updateUserDto.age) {
         description += `age (${user.age}), `;
