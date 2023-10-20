@@ -74,7 +74,10 @@ export class UserService {
       }
       if (updateUserDto.password) {
         description += `password, `;
-        const hash = await bcrypt.hash(user.password, randomInt(6, 18));
+        const hash = await bcrypt.hash(
+          updateUserDto.password,
+          randomInt(6, 18),
+        );
         user.password = hash;
       }
       if (updateUserDto.age) {
