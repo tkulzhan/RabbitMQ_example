@@ -63,16 +63,11 @@ app.get("/history/page/:page", async (req, res) => {
       return res.status(400).json({ message: "Invalid limit parameter" });
     }
 
-    const count = await prisma.history.count();
-    const maxPage = Math.ceil(count / limit);
-    if (page > maxPage) {
-      return res.status(400).json({ message: "Page out of bounds" });
-    }
-
     const validSorts = ["asc", "desc"];
     const sort = validSorts.includes(query.sort) ? query.sort : "desc";
 
     const user = parseInt(query.user);
+    const where = user ? { user_id: user } : {};
 
     const history_chunk = await prisma.history.findMany({
       skip: (page - 1) * limit,
@@ -80,10 +75,15 @@ app.get("/history/page/:page", async (req, res) => {
       orderBy: {
         created_at: sort,
       },
-      where: {
-        user_id: user,
-      },
+      where,
     });
+
+    const count = await prisma.history.count({ where });
+    const maxPage = Math.ceil(count / limit);
+    if (page > maxPage) {
+      return res.status(400).json({ message: "Page out of bounds" });
+    }
+
     const result = {
       data: history_chunk,
       maxPage: maxPage,
