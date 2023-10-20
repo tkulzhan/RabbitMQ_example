@@ -2,25 +2,24 @@ const express = require("express");
 const EventEmitter = require("events");
 const amqp = require("amqplib");
 const { PrismaClient } = require("@prisma/client");
+require("dotenv").config();
 
 const prisma = new PrismaClient();
 const app = express();
-const PORT = 5001;
+const PORT = parseInt(process.env.PORT) || 5001;
 
 app.use(express.json());
 
 const emitter = new EventEmitter();
 var channel, connection;
+const amqp_url = process.env.AMQP_URL;
 
 connectQueue();
 async function connectQueue() {
   try {
-    connection = await amqp.connect(
-      "amqps://mombwlwf:ST-l0O31nJnPfzAyuYc1iVyvV0Ns510y@cow.rmq2.cloudamqp.com/mombwlwf"
-    );
+    connection = await amqp.connect(amqp_url);
     channel = await connection.createChannel();
     await channel.consume("actions", (data) => {
-      console.log(`Received ${Buffer.from(data.content)}`);
       const action = JSON.parse(data.content);
       emitter.emit("action", action);
       channel.ack(data);

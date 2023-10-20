@@ -10,9 +10,7 @@ export class RabbitMQService {
   }
 
   async connectToRabbitMQ() {
-    this.connection = await amqp.connect(
-      'amqps://mombwlwf:ST-l0O31nJnPfzAyuYc1iVyvV0Ns510y@cow.rmq2.cloudamqp.com/mombwlwf',
-    );
+    this.connection = await amqp.connect(process.env.AMQP_URL);
   }
 
   async sendMessage(queueName: string, message: any) {
