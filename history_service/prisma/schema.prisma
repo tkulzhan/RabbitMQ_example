@@ -8,21 +8,21 @@ datasource db {
 }
 
 model history {
-  id          Int         @id @default(autoincrement())
+  id          Int         @id(map: "PK_9384942edf4804b38ca0ee51416") @default(autoincrement())
   type        action_type
-  created_at  DateTime    @default(now()) @db.Timestamp(6)
+  created_at  DateTime    @db.Timestamp(6)
   description String?
-  user_id     Int
-  user        user        @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  user_id     Int?
+  user        user?       @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "FK_ea92daa642af67e2a924a5547d5")
 }
 
 model user {
-  id       Int              @id(map: "PK_cace4a159ff9f2512dd42373760") @default(autoincrement())
-  username String           @db.VarChar(32)
-  email    String           @unique(map: "UQ_e12875dfb3b1d92d7d7c5377e22") @db.VarChar(64)
-  age      Int
-  gender   user_gender_enum
+  id       Int         @id(map: "PK_cace4a159ff9f2512dd42373760") @default(autoincrement())
+  username String      @db.VarChar(32)
+  email    String      @unique(map: "UQ_e12875dfb3b1d92d7d7c5377e22") @db.VarChar(64)
   password String
+  age      Int
+  gender   gender_enum
   history  history[]
 }
 
@@ -31,8 +31,8 @@ enum action_type {
   updated
 }
 
-enum user_gender_enum {
-  Male
-  Female
-  Unspecified
+enum gender_enum {
+  male
+  female
+  unspecified
 }

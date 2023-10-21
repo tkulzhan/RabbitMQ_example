@@ -36,9 +36,9 @@ export class CreateUserDto {
   age: number;
 
   @IsString()
-  @IsEnum(['Male', 'Female', 'Unspecified'], {
+  @IsEnum(['male', 'female', 'unspecified'], {
     message:
-      "gender must be one of the following values: 'Male', 'Female', 'Unspecified'",
+      "gender must be one of the following values: 'male', 'female', 'unspecified'",
   })
   gender: string;
 }

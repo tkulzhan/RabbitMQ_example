@@ -17,6 +17,10 @@ export class User {
   @Column({ type: 'int' })
   age: number;
 
-  @Column({ type: 'enum', enum: ['Male', 'Female', 'Unspecified'] })
+  @Column({
+    type: 'enum',
+    enum: ['male', 'female', 'unspecified'],
+    enumName: 'gender_enum',
+  })
   gender: string;
 }
