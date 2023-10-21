@@ -34,10 +34,14 @@ async function connectQueue() {
 }
 
 emitter.on("action", async (action) => {
-  const history = await prisma.history.create({
-    data: { ...action.data },
-  });
-  console.log(history);
+  try {
+    const history = await prisma.history.create({
+      data: { ...action.data },
+    });
+    console.log(history);
+  } catch (error) {
+    console.log(error);
+  }
 });
 
 app.listen(PORT, (error) => {
