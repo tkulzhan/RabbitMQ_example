@@ -25,12 +25,11 @@ async function connectQueue() {
       channel.ack(data);
     });
     process.on("beforeExit", () => {
-      console.log("closing");
       channel.close();
       connection.close();
     });
   } catch (error) {
-    console.log(error);
+    console.error(error);
   }
 }
 
